@@ -1,0 +1,54 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww18700\viewh13580\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 #!/bin/bash\
+                    # install updates\
+                    yum update -y\
+\
+                    # install apache httpd\
+                    yum install httpd -y\
+\
+                    # install java 8\
+                    yum install java-1.8.0 -y\
+                    # remove java 1.7\
+                    yum remove java-1.7.0-openjdk -y\
+\
+                    # create the working directory\
+                    mkdir /opt/gs-spring-boot-ec2-demo\
+                    # create configuration specifying the used profile\
+                    echo "RUN_ARGS=--spring.profiles.active=ec2-user" > /opt/gs-spring-boot-ec2-demo/gs-spring-boot-ec2-demo.conf\
+\
+                    # download the maven artifact from S3\
+                    aws s3 cp s3://<s3-bucket-name>/demo-0.0.1-SNAPSHOT.jar /opt/gs-spring-boot-ec2-demo/ --region=us-west-1\
+\
+                    # create a springboot user to run the app as a service\
+                    useradd springboot\
+                    # springboot login shell disabled\
+                    chsh -s /sbin/nologin springboot\
+                    chown springboot:springboot /opt/gs-spring-boot-ec2-demo/demo-0.0.1-SNAPSHOT.jar\
+                    chmod 500 /opt/gs-spring-boot-ec2-demo/demo-0.0.1-SNAPSHOT.jar\
+\
+                    # create a symbolic link\
+                    ln -s /opt/gs-spring-boot-ec2-demo/demo-0.0.1-SNAPSHOT.jar /etc/init.d/gs-spring-boot-ec2-demo\
+\
+                    # forward port 80 to 8080\
+                    echo "<VirtualHost *:80>\
+                        ProxyRequests Off\
+                        ProxyPass / http://localhost:8080/\
+                        ProxyPassReverse / http://localhost:8080/\
+                    </VirtualHost>" >> /etc/httpd/conf/httpd.conf\
+\
+                    # start the httpd and gs-spring-boot-ec2-demo\
+                    service httpd start\
+                \
+                 \
+                   service gs-spring-boot-ec2-demo start\
+\
+                    # automatically start httpd and gs-spring-boot-ec2-demo if this ec2 instance reboots\
+                    chkconfig httpd on\
+                    chkconfig gs-spring-boot-ec2-demo on\
+}
