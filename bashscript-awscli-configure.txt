@@ -1,7 +1,7 @@
 #!/bin/bash
 
 aws configure
-AWS Access Key ID [None]: AKIASPTYVFQ66L7UU54J
-AWS Secret Access Key [None]: bIerUTZl9U8sw2vl7MpQdeYYSF9mzI7HUakRk14v
+AWS Access Key ID [None]: <YOUR-ACCESS-KEY>
+AWS Secret Access Key [None]: <YOUR ACCESS-KEY-SECRET>
 Default region name [None]: us-west-1
 Default output format [None]: json
